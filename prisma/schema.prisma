@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    String  @id @default(cuid())
+  name  String?
+  email String  @unique
+  posts Post[]
+  profile Profile?
+  bank_accounts Bank_Accounts[]
+}
+
+model Post {
+  id       String @id @default(cuid())
+  title    String
+  content  String
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+}
+
+model Profile{
+  id       String  @id @default(cuid())
+  identity_type String
+  identity_number String
+  address String
+  user   User   @relation(fields: [user_id], references: [id])
+  user_id String @unique
+}
+
+// model Bank_Accounts {
+//   id                   String         @id @default(cuid())
+//   bank_name            String
+//   bank_account_number  String
+//   balance              Float
+//   user_id              String
+//   user                 User           @relation(fields: [user_id], references: [id])
+//   transactions_source  Transactions[] @relation("sourceAccount")
+//   transactions_target  Transactions[] @relation("targetAccount")
+// }
+
+model Bank_Accounts {
+  id                    String         @id @default(cuid())
+  bank_name             String
+  bank_account_number   String         //harusnya unique
+  balance               Float
+  user_id               String
+  user                  User           @relation(fields: [user_id], references: [id])
+  transactions_source   Transactions[] @relation("sourceAccount")
+  transactions_target   Transactions[] @relation("targetAccount")
+}
+
+// model Transactions {
+//   id                    String         @id @default(uuid())
+//   amount                Float
+//   source_account_id     String?
+//   sourceAccount         Bank_Accounts? @relation("sourceAccount", fields: [source_account_id], references: [id])
+//   destination_account_id String?
+//   destinationAccount    Bank_Accounts? @relation("targetAccount", fields: [destination_account_id], references: [id])
+// }
+
+
+
+model Transactions {
+  id                    String         @id @default(uuid())
+  amount                Float
+  source_account_id     String?
+  sourceAccount         Bank_Accounts? @relation("sourceAccount", fields: [source_account_id], references: [id])
+  destination_account_id String?
+  destinationAccount    Bank_Accounts? @relation("targetAccount", fields: [destination_account_id], references: [id])
+}
